@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <title>카드 발급</title>
+    <style>
+    body { font-family: Arial, sans-serif; padding: 20px; max-width: 700px; margin: auto; }
+    h2 { color: #333; }
+    label { display: block; margin-top: 12px; font-weight: bold; }
+    input, select { width: 100%; padding: 8px; margin-top: 4px; }
+    button { margin-top: 12px; padding: 8px 16px; cursor: pointer; }
+    .result { margin-top: 20px; padding: 12px; border: 1px solid #ddd; border-radius: 6px; background: #f9f9f9; }
+    .result table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+    .result th, .result td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    .result th { background-color: #eee; }
+    .success { color: green; font-weight: bold; margin-bottom: 6px; }
+    .error { color: red; font-weight: bold; margin-bottom: 6px; }
+    </style>
+</head>
+<body>
+<h2>카드 발급</h2>
+
+<form id="cardForm">
+    <label>고객 SSN:</label>
+    <input type="text" id="customerSsn" required>
+
+    <label>고객 이름:</label>
+    <input type="text" id="customerName" required>
+
+    <label>연결 계좌 ID:</label>
+    <input type="number" id="accountId" required>
+
+    <label>카드 종류:</label>
+    <select id="cardType">
+        <option value="신용">신용카드</option>
+        <option value="체크">체크카드</option>
+    </select>
+
+    <button type="button" onclick="submitForm()">카드 발급</button>
+</form>
+
+<!-- 카드 결과 표시 영역 -->
+<div id="cardResult" class="result"></div>
+
+<script>
+function submitForm() {
+    const formData = new URLSearchParams();
+    formData.append("customerSsn", document.getElementById("customerSsn").value);
+    formData.append("customerName", document.getElementById("customerName").value);
+    formData.append("accountId", document.getElementById("accountId").value);
+    formData.append("cardType", document.getElementById("cardType").value);
+
+    fetch("/card/issue", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: formData.toString()
+    })
+    .then(res => {
+        if (!res.ok) throw new Error("서버 오류 발생");
+        return res.json();
+    })
+    .then(card => {
+        const resultDiv = document.getElementById("cardResult");
+        resultDiv.innerHTML = `
+            <div class="success">카드 발급 성공!</div>
+            <table>
+                <tr><th>카드 ID</th><td>${card.cardId}</td></tr>
+                <tr><th>고객 이름</th><td>${card.customer.customerName}</td></tr>
+                <tr><th>고객 SSN</th><td>${card.customer.customerSsn}</td></tr>
+                <tr><th>연결 계좌 ID</th><td>${card.account.accountId}</td></tr>
+                <tr><th>카드 종류</th><td>${card.cardType}</td></tr>
+                <tr><th>발급일</th><td>${card.issueDate}</td></tr>
+                <tr><th>한도</th><td>${card.limitAmount}</td></tr>
+                <tr><th>결제일</th><td>${card.paymentDate}</td></tr>
+            </table>
+        `;
+    })
+    .catch(err => {
+        document.getElementById("cardResult").innerHTML = `<div class="error">카드 발급 실패: ${err.message}</div>`;
+    });
+}
+</script>
+</body>
+</html>

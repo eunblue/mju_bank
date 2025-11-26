@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Query Page</title>
+</head>
+<body>
+<h1>고객 조회</h1>
+
+<label for="name">고객 이름:</label>
+<input type="text" id="name" value="홍길동">
+<button onclick="loadAccounts(false)">계좌 조회</button>
+<button onclick="loadAccounts(true)">계좌 조회 (개설순 정렬)</button>
+<button onclick="loadTransactions()">과거 한달 거래내역</button>
+<button onclick="loadCards()">카드 정보</button>
+<button onclick="loadUpcomingBirthday()">가장 빠른 생일 고객</button>
+
+<hr>
+
+<h2>결과</h2>
+<pre id="result"></pre>
+
+<script>
+const resultEl = document.getElementById('result');
+
+function loadAccounts(sorted) {
+    const name = document.getElementById('name').value;
+    fetch(`/query/api/accounts?name=${name}&sort=${sorted}`)
+        .then(res => res.json())
+        .then(data => resultEl.textContent = JSON.stringify(data, null, 2));
+}
+
+function loadTransactions() {
+    const name = document.getElementById('name').value;
+    fetch(`/query/api/transactions?name=${name}`)
+        .then(res => res.json())
+        .then(data => resultEl.textContent = JSON.stringify(data, null, 2));
+}
+
+function loadCards() {
+    const name = document.getElementById('name').value;
+    fetch(`/query/api/cards?name=${name}`)
+        .then(res => res.json())
+        .then(data => resultEl.textContent = JSON.stringify(data, null, 2));
+}
+
+function loadUpcomingBirthday() {
+    fetch(`/query/api/upcoming-birthday`)
+        .then(res => res.json())
+        .then(data => resultEl.textContent = JSON.stringify(data, null, 2));
+}
+</script>
+</body>
+</html>
