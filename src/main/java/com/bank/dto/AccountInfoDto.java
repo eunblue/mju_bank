@@ -12,4 +12,5 @@ public class AccountInfoDto {
     private String customerSsn;
     private Integer accountId;
     private BigDecimal balance;
+    private String accountType;
 }

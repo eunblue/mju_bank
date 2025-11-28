@@ -2,53 +2,155 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>계좌 생성</title>
+  <title>계좌 & 카드 관리</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 900px; margin: auto; padding: 20px; }
+    h2 { color: #333; }
+    label { display: block; margin-top: 12px; font-weight: bold; }
+    input, select, button { padding: 8px; margin-top: 4px; }
+    button { cursor: pointer; }
+    .section { margin-bottom: 40px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background-color: #eee; }
+    .success { color: green; font-weight: bold; margin-bottom: 6px; }
+    .error { color: red; font-weight: bold; margin-bottom: 6px; }
+  </style>
 </head>
 <body>
-<h2>새 계좌 만들기</h2>
 
-<form id="accountForm">
-  <label>고객 이름 :</label><br>
-  <input type="text" id="customerName" required><br><br>
+<div class="section">
+  <h2>새 계좌 만들기</h2>
+  <form id="accountForm">
+    <label>고객 이름 :</label>
+    <input type="text" id="customerName" required>
 
-  <label>고객 주민번호(SSN) :</label><br>
-  <input type="text" id="customerSsn" required><br><br>
+    <label>고객 주민번호(SSN) :</label>
+    <input type="text" id="customerSsn" required>
 
-  <label>계좌 종류 :</label><br>
-  <select id="accountType">
-    <option value="적금">적금</option>
-    <option value="입출금">입출금</option>
-  </select><br><br>
+    <label>계좌 종류 :</label>
+    <select id="accountType">
+      <option value="적금">적금</option>
+      <option value="입출금">입출금</option>
+    </select><br><br>
 
-  <button type="button" onclick="submitForm()">계좌 생성</button>
-</form>
+    <button type="button" onclick="submitAccountForm()">계좌 생성</button>
+  </form>
+  <div id="accountResult"></div>
+</div>
 
 <hr>
 
-<div id="result"></div>
+<div class="section">
+  <h2>고객 계좌 조회</h2>
+  <label>고객 이름:</label>
+  <input type="text" id="searchName" placeholder="홍길동">
+  <button onclick="fetchAccounts()">조회</button>
+  <div id="accountsTable"></div>
+</div>
+
+<hr>
+
+<div class="section">
+  <h2>카드 발급</h2>
+  <form id="cardForm">
+    <label>고객 SSN:</label>
+    <input type="text" id="cardCustomerSsn" required>
+
+    <label>고객 이름:</label>
+    <input type="text" id="cardCustomerName" required>
+
+    <label>연결 계좌 ID:</label>
+    <input type="text" id="accountId" required>
+
+    <label>카드 종류:</label>
+    <select id="cardType">
+      <option value="신용">신용카드</option>
+      <option value="체크">체크카드</option>
+    </select>
+
+    <button type="button" onclick="issueCard()">카드 발급</button>
+  </form>
+  <div id="cardResult"></div>
+</div>
 
 <script>
-    function submitForm() {
-        const name = document.getElementById("customerName").value;
-        const ssn = document.getElementById("customerSsn").value;
-        const type = document.getElementById("accountType").value;;
+function submitAccountForm() {
+    const name = document.getElementById("customerName").value;
+    const ssn = document.getElementById("customerSsn").value;
+    const type = document.getElementById("accountType").value;
 
-        fetch("/account/create?customerSsn=" + ssn + "&customerName=" + name + "&accountType=" + type, {
-            method: "POST"
-        })
-            .then(res => res.json())
-            .then(data => {
-                document.getElementById("result").innerHTML =
-                    "<h3>계좌 생성 완료!</h3>" +
-                    "<p>계좌 ID: " + data.accountId + "</p>" +
-                    "<p>계좌 종류: " + data.accountType + "</p>" +
-                    "<p>고객 이름: " + data.customer.customerName + "</p>" +
-                    "<p>고객 SSN: " + data.customer.customerSsn + "</p>";
-            })
-            .catch(err => {
-                alert("오류 발생: " + err);
+    fetch(`/account/create?customerSsn=${ssn}&customerName=${name}&accountType=${type}`, {
+        method: "POST"
+    })
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById("accountResult").innerHTML =
+            `<div class="success">계좌 생성 완료!</div>
+             <p>계좌 ID: ${data.accountId}</p>
+             <p>계좌 종류: ${data.accountType}</p>
+             <p>고객 이름: ${data.customer.customerName}</p>
+             <p>고객 SSN: ${data.customer.customerSsn}</p>`;
+    })
+    .catch(err => { alert("오류 발생: " + err); });
+}
+
+async function fetchAccounts() {
+    const name = document.getElementById("searchName").value.trim();
+    if (!name) return alert("고객 이름을 입력하세요.");
+
+    try {
+        const res = await fetch(`/account/by-name/grouped?customerName=${encodeURIComponent(name)}`);
+        if (!res.ok) throw new Error("서버 오류 발생");
+        const grouped = await res.json();
+
+        let html = "";
+        for (const ssn in grouped) {
+            html += `<h3>고객 SSN: ${ssn} (${grouped[ssn][0].customerName})</h3>`;
+            html += `<table>
+                        <tr><th>계좌 ID</th><th>계좌 종류</th><th>잔액</th></tr>`;
+            grouped[ssn].forEach(acc => {
+                html += `<tr>
+                            <td>${acc.accountId}</td>
+                            <td>${acc.accountType}</td>
+                            <td>${acc.balance.toLocaleString()}원</td>
+                         </tr>`;
             });
+            html += `</table><br>`;
+        }
+        document.getElementById("accountsTable").innerHTML = html;
+    } catch(err) {
+        document.getElementById("accountsTable").innerHTML = `<div class="error">오류: ${err.message}</div>`;
     }
+}
+
+function issueCard() {
+    const formData = new URLSearchParams();
+    formData.append("customerSsn", document.getElementById("cardCustomerSsn").value);
+    formData.append("customerName", document.getElementById("cardCustomerName").value);
+    formData.append("accountId", document.getElementById("accountId").value);
+    formData.append("cardType", document.getElementById("cardType").value);
+
+    fetch("/account/card/issue", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: formData.toString()
+    })
+    .then(res => res.json())
+    .then(card => {
+        document.getElementById("cardResult").innerHTML =
+            `<div class="success">카드 발급 성공!</div>
+             <p>카드 ID: ${card.cardId}</p>
+             <p>고객 이름: ${card.customer.customerName}</p>
+             <p>고객 SSN: ${card.customer.customerSsn}</p>
+             <p>연결 계좌 ID: ${card.account.accountId}</p>
+             <p>카드 종류: ${card.cardType}</p>
+             <p>발급일: ${card.issueDate}</p>`;
+    })
+    .catch(err => {
+        document.getElementById("cardResult").innerHTML = `<div class="error">${err}</div>`;
+    });
+}
 </script>
 </body>
 </html>

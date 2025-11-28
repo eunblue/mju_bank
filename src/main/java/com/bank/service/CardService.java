@@ -37,11 +37,11 @@ public class CardService {
                 .orElseThrow(() -> new RuntimeException("Account not found: " + accountId));
 
         // 3️⃣ 카드 ID 생성
-        String lastCardId = cardRepository.findTopByOrderByCardIdDesc();
-        int nextId = 10001; // 최초 시작값
+        Card lastCard = cardRepository.findTopByOrderByCardIdDesc();
+        int nextId = 10001;
 
-        if (lastCardId != null && lastCardId.startsWith("C")) {
-            nextId = Integer.parseInt(lastCardId.substring(1)) + 1;
+        if (lastCard != null && lastCard.getCardId().startsWith("C")) {
+            nextId = Integer.parseInt(lastCard.getCardId().substring(1)) + 1;
         }
 
         // 4️⃣ 신규 카드 생성

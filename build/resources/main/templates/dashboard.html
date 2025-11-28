@@ -15,6 +15,7 @@
         th { background-color: #eee; }
         .success { color: green; font-weight: bold; margin-bottom: 6px; }
         .error { color: red; font-weight: bold; margin-bottom: 6px; }
+        .customer-table { margin-bottom: 24px; }
     </style>
 </head>
 <body>
@@ -56,32 +57,44 @@ async function fetchAccounts() {
     if (!name) return alert("고객 이름을 입력하세요.");
 
     try {
-        const res = await fetch(`/bank/accounts?customerName=${encodeURIComponent(name)}`);
+        // 고객별 그룹핑된 계좌 조회
+        const res = await fetch(`/account/by-name/grouped?customerName=${encodeURIComponent(name)}`);
         if (!res.ok) throw new Error("서버 오류 발생");
-        const accounts = await res.json();
+        const groupedAccounts = await res.json();
 
-        if (accounts.length === 0) {
-            document.getElementById("accountResult").innerHTML = `<div class="error">조회된 계좌가 없습니다.</div>`;
+        const container = document.getElementById("accountResult");
+        container.innerHTML = '';
+
+        const customerKeys = Object.keys(groupedAccounts);
+        if (customerKeys.length === 0) {
+            container.innerHTML = `<div class="error">조회된 계좌가 없습니다.</div>`;
             return;
         }
 
-        let html = `<table>
-            <tr>
-                <th>고객 이름</th>
-                <th>주민등록번호</th>
-                <th>계좌 ID</th>
-                <th>현재 잔액</th>
-            </tr>`;
-        accounts.forEach(a => {
-            html += `<tr>
-                <td>${a.customerName}</td>
-                <td>${a.customerSsn}</td>
-                <td>${a.accountId}</td>
-                <td>${a.balance.toLocaleString()}원</td>
-            </tr>`;
+        // 고객별로 테이블 생성
+        customerKeys.forEach(ssn => {
+            const accounts = groupedAccounts[ssn];
+            const customerName = accounts[0]?.customerName || '';
+
+            let html = `<div class="customer-table">
+                <h3>고객: ${customerName} (SSN: ${ssn})</h3>
+                <table>
+                    <tr>
+                        <th>계좌 ID</th>
+                        <th>잔액</th>
+                    </tr>`;
+
+            accounts.forEach(a => {
+                html += `<tr>
+                    <td>${a.accountId}</td>
+                    <td>${a.balance.toLocaleString()}원</td>
+                </tr>`;
+            });
+
+            html += `</table></div>`;
+            container.innerHTML += html;
         });
-        html += `</table>`;
-        document.getElementById("accountResult").innerHTML = html;
+
     } catch (err) {
         document.getElementById("accountResult").innerHTML = `<div class="error">오류: ${err.message}</div>`;
     }
