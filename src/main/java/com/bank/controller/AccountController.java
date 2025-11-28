@@ -1,9 +1,13 @@
 package com.bank.controller;
 
 import com.bank.domain.Card;
+import com.bank.domain.Customer;
 import com.bank.dto.AccountInfoDto;
+import com.bank.dto.BirthdayDto;
+import com.bank.repository.CustomerRepository;
 import com.bank.service.AccountService;
 import com.bank.service.CardService;
+import com.bank.service.CustomerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +22,8 @@ public class AccountController {
 
     private final AccountService accountService;
     private final CardService cardService;
+    private final CustomerService customerService;
+
 
     // -------------------------
     // 계좌 생성 페이지
@@ -62,4 +68,11 @@ public class AccountController {
     ) {
         return cardService.issueCard(customerSsn, customerName, accountId, cardType);
     }
+
+    @GetMapping("/next-birthday")
+    @ResponseBody
+    public BirthdayDto getUpcomingBirthdayCustomer() {
+        return customerService.getUpcomingBirthdayCustomerDto();
+    }
+
 }

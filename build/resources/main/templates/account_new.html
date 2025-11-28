@@ -73,6 +73,9 @@
   </form>
   <div id="cardResult"></div>
 </div>
+<button id="btnNextBirthday">가장 가까운 생일 고객 조회</button>
+
+<div id="birthdayResult" style="margin-top:15px; font-size:18px; font-weight:bold;"></div>
 
 <script>
 function submitAccountForm() {
@@ -151,6 +154,26 @@ function issueCard() {
         document.getElementById("cardResult").innerHTML = `<div class="error">${err}</div>`;
     });
 }
+
+ document.getElementById("btnNextBirthday").addEventListener("click", function() {
+        fetch("/account/next-birthday")
+            .then(response => response.json())
+            .then(data => {
+                let resultArea = document.getElementById("birthdayResult");
+
+                if(!data || !data.customerName) {
+                    resultArea.innerHTML = "조회 결과가 없습니다.";
+                    return;
+                }
+
+                resultArea.innerHTML =
+                    `🎉 <b>${data.customerName}</b> 고객님의 생일이 가장 가까워요! <br>
+                     📍 주소: ${data.address} <br>
+                     🎂 생일: ${data.birthDate} <br>
+                     ⏳ D-Day: <b>${data.dday}일 남음</b>`;
+            })
+            .catch(err => console.error(err));
+    });
 </script>
 </body>
 </html>
