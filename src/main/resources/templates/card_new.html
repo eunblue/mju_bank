@@ -2,47 +2,173 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8" />
-    <title>카드 발급</title>
+    <title>명지은행 - 카드 발급 신청</title>
     <style>
-    body { font-family: Arial, sans-serif; padding: 20px; max-width: 700px; margin: auto; }
-    h2 { color: #333; }
-    label { display: block; margin-top: 12px; font-weight: bold; }
-    input, select { width: 100%; padding: 8px; margin-top: 4px; }
-    button { margin-top: 12px; padding: 8px 16px; cursor: pointer; }
-    .result { margin-top: 20px; padding: 12px; border: 1px solid #ddd; border-radius: 6px; background: #f9f9f9; }
-    .result table { width: 100%; border-collapse: collapse; margin-top: 8px; }
-    .result th, .result td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-    .result th { background-color: #eee; }
-    .success { color: green; font-weight: bold; margin-bottom: 6px; }
-    .error { color: red; font-weight: bold; margin-bottom: 6px; }
+        /* 폰트 및 기본 설정 */
+        body { 
+            font-family: 'Malgun Gothic', '맑은 고딕', Arial, sans-serif; 
+            max-width: 1000px; 
+            margin: auto; 
+            padding: 0; 
+            background-color: #f4f7f6; /* 밝은 회색 배경 */
+            color: #333;
+        }
+        
+        /* 헤더 스타일 */
+        #header {
+            background-color: #004d99; /* 진한 파란색 */
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            border-bottom: 5px solid #002c5f;
+            margin-bottom: 30px;
+        }
+
+        #bankLogo {
+            height: 40px;
+            margin-right: 15px;
+        }
+
+        #bankName {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        /* 섹션/본문 스타일 */
+        h2 { 
+            color: #004d99; /* 은행 메인 컬러 */
+            border-left: 5px solid #004d99;
+            padding-left: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .section { 
+            margin: 20px; 
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+        }
+        
+        /* 폼 요소 스타일 */
+        label { 
+            display: block; 
+            margin-top: 15px; /* 기존 12px -> 15px */
+            font-weight: bold; 
+            color: #555;
+            font-size: 14px;
+        }
+        
+        input, select { 
+            width: 100%; 
+            padding: 10px; /* 기존 8px -> 10px */
+            margin-top: 6px; 
+            border: 1px solid #ccc; 
+            border-radius: 5px; 
+            box-sizing: border-box; 
+            font-size: 16px;
+        }
+        
+        /* 버튼 스타일 */
+        button { 
+            cursor: pointer; 
+            background-color: #0099cc; /* 밝은 파란색 */
+            color: white; 
+            border: none; 
+            padding: 10px 20px; /* 기존 8px 16px -> 10px 20px */
+            border-radius: 5px;
+            margin-top: 20px; /* 기존 12px -> 20px */
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover { 
+            background-color: #007399; 
+        }
+
+        /* 결과 표시 영역 스타일 */
+        .result { 
+            margin-top: 20px; 
+            padding: 15px; /* 기존 12px -> 15px */
+            border-radius: 8px; /* 기존 6px -> 8px */
+            background: #f0f8ff; /* 연한 하늘색 배경 */
+            border: 1px solid #0099cc; /* 테두리 색상 변경 */
+        }
+
+        .result table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 15px; 
+        }
+
+        .result th, .result td { 
+            border: 1px solid #ddd; /* 기존 #ccc -> #ddd */
+            padding: 10px; /* 기존 8px -> 10px */
+            text-align: left; 
+        }
+
+        .result th { 
+            background-color: #e6f7ff; /* 연한 파란색 헤더 배경 */
+            color: #333;
+            font-weight: bold;
+        }
+        
+        .success { 
+            color: #004d99; /* 은행 메인 컬러 */
+            font-weight: bold; 
+            margin-bottom: 10px; 
+        }
+        
+        .error { 
+            color: #dc3545; 
+            font-weight: bold; 
+            margin-bottom: 10px; 
+        }
     </style>
 </head>
 <body>
-<h2>카드 발급</h2>
 
-<form id="cardForm">
-    <label>고객 SSN:</label>
-    <input type="text" id="customerSsn" required>
+<div id="header">
+    <img id="bankLogo" alt="명지은행 로고">
+    <span id="bankName">명지은행 - 카드 발급 신청</span>
+</div>
 
-    <label>고객 이름:</label>
-    <input type="text" id="customerName" required>
+<div class="section">
+    <h2>카드 발급 💳</h2>
 
-    <label>연결 계좌 ID:</label>
-    <input type="number" id="accountId" required>
+    <form id="cardForm">
+        <label for="customerSsn">고객 SSN:</label>
+        <input type="text" id="customerSsn" required>
 
-    <label>카드 종류:</label>
-    <select id="cardType">
-        <option value="신용">신용카드</option>
-        <option value="체크">체크카드</option>
-    </select>
+        <label for="customerName">고객 이름:</label>
+        <input type="text" id="customerName" required>
 
-    <button type="button" onclick="submitForm()">카드 발급</button>
-</form>
+        <label for="accountId">연결 계좌 ID:</label>
+        <input type="number" id="accountId" required>
 
-<!-- 카드 결과 표시 영역 -->
-<div id="cardResult" class="result"></div>
+        <label for="cardType">카드 종류:</label>
+        <select id="cardType">
+            <option value="신용">신용카드</option>
+            <option value="체크">체크카드</option>
+        </select>
+
+        <button type="button" onclick="submitForm()">카드 발급</button>
+    </form>
+
+    <div id="cardResult" class="result"></div>
+</div>
 
 <script>
+// --- 로고 이미지 설정 (JavaScript) ---
+// 실제 프로젝트에 'symbol02.png' 파일이 존재해야 합니다.
+document.addEventListener('DOMContentLoaded', function() {
+    const logoElement = document.getElementById('bankLogo');
+    // 로고 이미지 경로는 사용자 환경에 맞게 조정하세요.
+    // 현재 코드에서는 이미지가 없으므로, 로딩에 실패할 수 있지만, 스타일을 위해 유지합니다.
+    logoElement.src = 'symbol02.png'; 
+});
+
 function submitForm() {
     const formData = new URLSearchParams();
     formData.append("customerSsn", document.getElementById("customerSsn").value);
