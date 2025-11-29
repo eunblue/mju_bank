@@ -16,8 +16,10 @@ import java.time.LocalDateTime;
 public class Transaction {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // DB auto-increment
     @Column(name = "transaction_no", nullable = false)
     private Long transactionNo;
+
 
     @ManyToOne
     @JoinColumn(name = "account_id", nullable = false)

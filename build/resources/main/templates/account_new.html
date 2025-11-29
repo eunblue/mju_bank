@@ -19,6 +19,7 @@
 </head>
 <body>
 
+<!-- 계좌 생성 -->
 <div class="section">
   <h2>새 계좌 만들기</h2>
   <form id="accountForm">
@@ -41,6 +42,7 @@
 
 <hr>
 
+<!-- 고객 계좌 조회 -->
 <div class="section">
   <h2>고객 계좌 조회</h2>
   <label>고객 이름:</label>
@@ -51,6 +53,7 @@
 
 <hr>
 
+<!-- 카드 발급 -->
 <div class="section">
   <h2>카드 발급</h2>
   <form id="cardForm">
@@ -73,9 +76,46 @@
   </form>
   <div id="cardResult"></div>
 </div>
-<button id="btnNextBirthday">가장 가까운 생일 고객 조회</button>
 
+<hr>
+
+<!-- 가장 가까운 생일 고객 -->
+<button id="btnNextBirthday">가장 가까운 생일 고객 조회</button>
 <div id="birthdayResult" style="margin-top:15px; font-size:18px; font-weight:bold;"></div>
+
+<hr>
+
+<div class="section">
+  <h2>거래 등록</h2>
+  <label>고객 이름:</label>
+  <input type="text" id="transCustomerName" placeholder="홍길동">
+  <label>고객 SSN:</label>
+  <input type="text" id="transCustomerSsn" placeholder="010507-11111111">
+  <label>계좌 ID:</label>
+  <input type="text" id="transAccountId" placeholder="21">
+  <label>금액:</label>
+  <input type="number" id="transAmount" placeholder="10000">
+  <label>거래 내용:</label>
+  <input type="text" id="transContent" placeholder="카페, 편의점 등">
+  <label>거래 타입:</label>
+  <select id="transType">
+    <option value="입금">입금</option>
+    <option value="출금">출금</option>
+  </select>
+  <button onclick="createTransaction()">거래 등록</button>
+  <div id="transactionCreateResult"></div>
+</div>
+
+<div class="section">
+  <h2>거래 내역 조회 (지난 1개월)</h2>
+  <label>고객 이름:</label>
+  <input type="text" id="transSearchName" placeholder="홍길동">
+  <label>고객 SSN:</label>
+  <input type="text" id="transSearchSsn" placeholder="010507-11111111">
+  <button onclick="fetchTransactions()">조회</button>
+  <div id="transactionResult"></div>
+</div>
+
 
 <script>
 function submitAccountForm() {
@@ -155,25 +195,94 @@ function issueCard() {
     });
 }
 
- document.getElementById("btnNextBirthday").addEventListener("click", function() {
-        fetch("/account/next-birthday")
-            .then(response => response.json())
-            .then(data => {
-                let resultArea = document.getElementById("birthdayResult");
+document.getElementById("btnNextBirthday").addEventListener("click", function() {
+    fetch("/account/next-birthday")
+        .then(response => response.json())
+        .then(data => {
+            let resultArea = document.getElementById("birthdayResult");
 
-                if(!data || !data.customerName) {
-                    resultArea.innerHTML = "조회 결과가 없습니다.";
-                    return;
-                }
+            if(!data || !data.customerName) {
+                resultArea.innerHTML = "조회 결과가 없습니다.";
+                return;
+            }
 
-                resultArea.innerHTML =
-                    `🎉 <b>${data.customerName}</b> 고객님의 생일이 가장 가까워요! <br>
-                     📍 주소: ${data.address} <br>
-                     🎂 생일: ${data.birthDate} <br>
-                     ⏳ D-Day: <b>${data.dday}일 남음</b>`;
-            })
-            .catch(err => console.error(err));
-    });
+            resultArea.innerHTML =
+                `🎉 <b>${data.customerName}</b> 고객님의 생일이 가장 가까워요! <br>
+                 📍 주소: ${data.address} <br>
+                 🎂 생일: ${data.birthDate} <br>
+                 ⏳ D-Day: <b>${data.dday}일 남음</b>`;
+        })
+        .catch(err => console.error(err));
+});
+
+async function createTransaction() {
+    const accountId = Number(document.getElementById("transAccountId").value);
+    const name = document.getElementById("transCustomerName").value.trim();
+    const ssn = document.getElementById("transCustomerSsn").value.trim();
+    const amount = Number(document.getElementById("transAmount").value);
+    const type = document.getElementById("transType").value;
+    const content = document.getElementById("transContent").value.trim();
+
+    if (!content) return alert("거래 내용을 입력하세요");
+
+    const formData = new URLSearchParams();
+    formData.append("accountId", accountId);
+    formData.append("type", type);
+    formData.append("content", content);
+    formData.append("amount", amount);
+
+    try {
+        const res = await fetch("/account/transaction/create", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: formData.toString()
+        });
+
+        if (!res.ok) throw new Error("거래 등록 실패");
+
+        const data = await res.json();
+        document.getElementById("transactionCreateResult").innerHTML =
+            `<div class="success">${data.transactionType} 완료! 잔액: ${Number(data.balanceAfter).toLocaleString()}원</div>`;
+    } catch (err) {
+        document.getElementById("transactionCreateResult").innerHTML = `<div class="error">${err.message}</div>`;
+    }
+}
+
+async function fetchTransactions() {
+    const name = document.getElementById("transSearchName").value.trim();
+    const ssn = document.getElementById("transSearchSsn").value.trim();
+
+    if (!name || !ssn) {
+        alert("고객 이름과 SSN을 입력하세요");
+        return;
+    }
+
+    try {
+        const res = await fetch(`/account/transactions/by-customer?customerName=${encodeURIComponent(name)}&customerSsn=${encodeURIComponent(ssn)}`);
+        const list = await res.json();
+
+        if (list.length === 0) {
+            document.getElementById("transactionResult").innerHTML = "<div class='error'>거래 내역 없음</div>";
+            return;
+        }
+
+        let html = `<table>
+                        <tr><th>일자</th><th>구분</th><th>금액</th><th>잔액</th></tr>`;
+        list.forEach(t => {
+            html += `<tr>
+                        <td>${t.transactionDate}</td>
+                        <td>${t.transactionType}</td>
+                        <td>${Number(t.amount).toLocaleString()}원</td>
+                        <td>${Number(t.balanceAfter).toLocaleString()}원</td>
+                     </tr>`;
+        });
+        html += `</table>`;
+        document.getElementById("transactionResult").innerHTML = html;
+    } catch (err) {
+        document.getElementById("transactionResult").innerHTML = `<div class="error">${err.message}</div>`;
+    }
+}
+
 </script>
 </body>
 </html>

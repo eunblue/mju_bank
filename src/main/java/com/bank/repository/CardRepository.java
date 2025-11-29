@@ -13,5 +13,7 @@ public interface CardRepository extends JpaRepository<Card, Long> {
     List<Card> findByCustomer_CustomerName(String name);
 
     Card findTopByOrderByCardIdDesc();
+
+    List<Card> findByCustomerCustomerSsnAndCardType(String customerSsn, String 신용);
 }
 

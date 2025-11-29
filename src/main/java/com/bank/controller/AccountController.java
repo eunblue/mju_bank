@@ -2,16 +2,19 @@ package com.bank.controller;
 
 import com.bank.domain.Card;
 import com.bank.domain.Customer;
+import com.bank.domain.Transaction;
 import com.bank.dto.AccountInfoDto;
 import com.bank.dto.BirthdayDto;
 import com.bank.repository.CustomerRepository;
 import com.bank.service.AccountService;
 import com.bank.service.CardService;
 import com.bank.service.CustomerService;
+import com.bank.service.TransactionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -23,6 +26,7 @@ public class AccountController {
     private final AccountService accountService;
     private final CardService cardService;
     private final CustomerService customerService;
+    private final TransactionService transactionService;
 
 
     // -------------------------
@@ -73,6 +77,35 @@ public class AccountController {
     @ResponseBody
     public BirthdayDto getUpcomingBirthdayCustomer() {
         return customerService.getUpcomingBirthdayCustomerDto();
+    }
+
+    // ✅ 거래 등록
+    @PostMapping("/transaction/create")
+    @ResponseBody
+    public Transaction createTransaction(@RequestParam Integer accountId,
+                                         @RequestParam String type,
+                                         @RequestParam String content,
+                                         @RequestParam BigDecimal amount) {
+        return transactionService.createTransaction(accountId, type, content, amount);
+    }
+
+
+    // ✅ 거래 내역 조회 (최근 1개월)
+    @GetMapping("/transactions/by-customer")
+    @ResponseBody
+    public List<Transaction> getTransactions(
+            @RequestParam String customerName,
+            @RequestParam String customerSsn
+    ) {
+        return transactionService.getTransactionsByFirstAccount(customerName, customerSsn);
+    }
+
+    // 요청 DTO
+    public static class TransactionRequest {
+        public Integer accountId;
+        public String type;
+        public String content;
+        public BigDecimal amount;
     }
 
 }

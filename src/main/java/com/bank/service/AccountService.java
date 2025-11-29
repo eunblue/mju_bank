@@ -43,10 +43,11 @@ public class AccountService {
 
     // 이름으로 계좌 조회 후 고객별 그룹핑
     public Map<String, List<AccountInfoDto>> getAccountsGroupedByCustomer(String customerName) {
-        return accountRepository.findByCustomerNameOrderByOpenDateAsc(customerName).stream()
+        return accountRepository.findByCustomerCustomerNameOrderByOpenDateAsc(customerName)
+                .stream()
                 .collect(Collectors.groupingBy(
                         a -> a.getCustomer().getCustomerSsn(), // SSN 기준 그룹핑
-                        LinkedHashMap::new, // 순서 유지
+                        LinkedHashMap::new,
                         Collectors.mapping(
                                 a -> new AccountInfoDto(
                                         a.getCustomer().getCustomerName(),

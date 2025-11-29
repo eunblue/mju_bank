@@ -12,9 +12,18 @@ import java.util.List;
 @Repository
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
 
-    @Query("SELECT t FROM Transaction t WHERE t.account.accountId = :accountId " +
-            "AND t.transactionDate >= :startDate ORDER BY t.transactionDate DESC")
-    List<Transaction> findLastMonth(@Param("accountId") Long accountId,
-                                    @Param("startDate") LocalDateTime startDate);
+    @Query("""
+           SELECT t FROM Transaction t
+           WHERE t.account.accountId = :accountId
+           AND t.account.customer.customerSsn = :customerSsn
+           AND t.account.customer.customerName = :customerName
+           AND t.transactionDate >= :startDate
+           ORDER BY t.transactionDate DESC
+           """)
+    List<Transaction> findRecentMonthHistory(
+            @Param("accountId") Integer accountId,
+            @Param("customerSsn") String customerSsn,
+            @Param("customerName") String customerName,
+            @Param("startDate") LocalDateTime startDate
+    );
 }
-
