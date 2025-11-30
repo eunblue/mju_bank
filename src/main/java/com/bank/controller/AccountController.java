@@ -129,6 +129,7 @@ public class AccountController {
     // 고객 신용카드 정보 조회 (이름 + 주민번호)
     // -------------------------
     @GetMapping("/card-info/all")
+    @ResponseBody
     public List<CreditCardInfoDto> getAllCardInfo(@RequestParam String customerSsn) {
         return cardService.getCardsByCustomer(customerSsn);
     }
