@@ -5,6 +5,7 @@ import com.bank.domain.Customer;
 import com.bank.domain.Transaction;
 import com.bank.dto.AccountInfoDto;
 import com.bank.dto.BirthdayDto;
+import com.bank.dto.CreditCardInfoDto;
 import com.bank.repository.CustomerRepository;
 import com.bank.service.AccountService;
 import com.bank.service.CardService;
@@ -107,5 +108,29 @@ public class AccountController {
         public String content;
         public BigDecimal amount;
     }
+
+    // -------------------------
+    // 고객 신용카드 정보 조회 (이름 + 주민번호)
+    // -------------------------
+    @GetMapping("/card-info/all")
+    @ResponseBody
+    public List<CreditCardInfoDto> getAllCardInfo(@RequestParam String customerSsn) {
+        return cardService.getCardsByCustomer(customerSsn);
+    }
+
+
+    @GetMapping("/card/summary")
+    @ResponseBody
+    public Map<String, Object> getCardSummary(
+            @RequestParam String customerName,
+            @RequestParam String customerSsn) {
+
+        List<CreditCardInfoDto> cards = cardService.getCardsByCustomer(customerSsn);
+        return Map.of(
+                "customerName", customerName,
+                "cards", cards
+        );
+    }
+
 
 }

@@ -18,4 +18,5 @@ public class CardDto {
     private String customerSsn;
     private Integer accountId;
 
+
 }

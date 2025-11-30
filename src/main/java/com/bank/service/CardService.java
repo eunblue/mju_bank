@@ -25,9 +25,9 @@ public class CardService {
     private final CardRepository cardRepository;
     private final TransactionRepository transactionRepository;
 
+    // 카드 발급
     public synchronized Card issueCard(String customerSsn, String customerName, Integer accountId, String cardType) {
 
-        // 1️⃣ 고객 확인 (없으면 생성)
         Customer customer = customerRepository.findById(customerSsn).orElse(null);
         if (customer == null) {
             customer = new Customer();
@@ -37,49 +37,53 @@ public class CardService {
             customerRepository.save(customer);
         }
 
-        // 2️⃣ 계좌 확인
         Account account = accountRepository.findById(accountId)
-                .orElseThrow(() -> new RuntimeException("Account not found: " + accountId));
+                .orElseThrow(() -> new RuntimeException("Account Not Found: " + accountId));
 
-        // 3️⃣ 카드 ID 생성
         Card lastCard = cardRepository.findTopByOrderByCardIdDesc();
         int nextId = 10001;
-
         if (lastCard != null && lastCard.getCardId().startsWith("C")) {
             nextId = Integer.parseInt(lastCard.getCardId().substring(1)) + 1;
         }
 
-        // 4️⃣ 신규 카드 생성
         Card newCard = new Card();
         newCard.setCardId("C" + nextId);
         newCard.setCustomer(customer);
         newCard.setAccount(account);
         newCard.setCardType(cardType);
         newCard.setIssueDate(LocalDate.now());
-        newCard.setPaymentDate(25);
-        newCard.setLimitAmount(BigDecimal.valueOf(10_000_000));
+
+        if ("체크".equals(cardType)) {
+            newCard.setLimitAmount(BigDecimal.ZERO);
+            newCard.setPaymentDate(0);
+        } else { // 신용카드
+            newCard.setLimitAmount(BigDecimal.valueOf(10_000_000));
+            newCard.setPaymentDate(25);
+        }
 
         return cardRepository.save(newCard);
     }
 
-    // 고객의 모든 신용카드 + 연결 계좌 + 사용 금액 + 한도
-   /* public List<CreditCardInfoDto> getCreditCardsByCustomer(String customerSsn) {
-
-        List<Card> cards = cardRepository.findByCustomerCustomerSsnAndCardType(customerSsn, "신용");
+    // 고객 카드 + 연결 계좌 + 사용금액 + 한도 조회
+    public List<CreditCardInfoDto> getCardsByCustomer(String customerSsn) {
+        List<Card> cards = cardRepository.findByCustomerCustomerSsn(customerSsn);
 
         return cards.stream().map(card -> {
-            // 사용 금액 계산: transaction의 amount 합계
-            BigDecimal usedAmount = transactionRepository.sumAmountByAccountId(card.getAccount().getAccountId());
+            BigDecimal usedAmount = transactionRepository.sumUsedAmount(card.getAccount().getAccountId());
             if (usedAmount == null) usedAmount = BigDecimal.ZERO;
+
+            BigDecimal limitAmount = "체크".equals(card.getCardType()) ? BigDecimal.ZERO : card.getLimitAmount();
+            BigDecimal accountBalance = card.getAccount().getBalance() != null ? card.getAccount().getBalance() : BigDecimal.ZERO;
 
             return new CreditCardInfoDto(
                     card.getCardId(),
+                    card.getCardType(),
                     card.getAccount().getAccountId(),
                     card.getAccount().getAccountType(),
                     usedAmount,
-                    card.getLimitAmount()
+                    limitAmount,
+                    accountBalance
             );
         }).collect(Collectors.toList());
-    }*/
-
+    }
 }

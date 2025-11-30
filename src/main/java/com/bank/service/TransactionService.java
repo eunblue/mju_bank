@@ -28,7 +28,6 @@ public class TransactionService {
                 ? account.getBalance().add(amount)
                 : account.getBalance().subtract(amount);
 
-        // 거래 기록 생성
         Transaction transaction = new Transaction();
         transaction.setAccount(account);
         transaction.setTransactionType(type);
@@ -37,7 +36,6 @@ public class TransactionService {
         transaction.setBalanceAfter(newBalance);
         transaction.setTransactionDate(LocalDateTime.now());
 
-        // 계좌 잔액 업데이트
         account.setBalance(newBalance);
         accountRepository.save(account);
 

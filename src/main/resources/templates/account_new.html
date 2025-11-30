@@ -116,6 +116,17 @@
   <div id="transactionResult"></div>
 </div>
 
+<hr>
+
+<div class="section">
+  <h2>고객 카드 & 계좌 & 사용내역 조회</h2>
+  <label>고객 이름:</label>
+  <input type="text" id="cardInfoName" placeholder="홍길동">
+  <label>고객 SSN:</label>
+  <input type="text" id="cardInfoSsn" placeholder="010507-11111111">
+  <button onclick="fetchCardUsage()">조회</button>
+  <div id="cardUsageResult"></div>
+</div>
 
 <script>
 function submitAccountForm() {
@@ -153,10 +164,11 @@ async function fetchAccounts() {
             html += `<table>
                         <tr><th>계좌 ID</th><th>계좌 종류</th><th>잔액</th></tr>`;
             grouped[ssn].forEach(acc => {
+                const balance = acc.balance ?? 0;
                 html += `<tr>
                             <td>${acc.accountId}</td>
                             <td>${acc.accountType}</td>
-                            <td>${acc.balance.toLocaleString()}원</td>
+                            <td>${Number(balance).toLocaleString()}원</td>
                          </tr>`;
             });
             html += `</table><br>`;
@@ -181,14 +193,19 @@ function issueCard() {
     })
     .then(res => res.json())
     .then(card => {
+        const balance = card.accountBalance ?? 0;
+        const used = card.usedAmount ?? 0;
+        const limit = card.limitAmount ?? 0;
+
         document.getElementById("cardResult").innerHTML =
-            `<div class="success">카드 발급 성공!</div>
-             <p>카드 ID: ${card.cardId}</p>
-             <p>고객 이름: ${card.customer.customerName}</p>
-             <p>고객 SSN: ${card.customer.customerSsn}</p>
-             <p>연결 계좌 ID: ${card.account.accountId}</p>
-             <p>카드 종류: ${card.cardType}</p>
-             <p>발급일: ${card.issueDate}</p>`;
+        `<div class="success">카드 발급 성공!</div>
+         <p><b>카드 ID:</b> ${card.cardId}</p>
+         <p><b>카드 종류:</b> ${card.cardType}</p>
+         <p><b>연결 계좌 ID:</b> ${card.accountId}</p>
+         <p><b>발급일:</b> ${card.issueDate ?? '-'}</p>
+         <p><b>현재 잔액:</b> ${Number(balance).toLocaleString()}원</p>
+         <p><b>사용 금액:</b> ${card.cardType === "신용" ? Number(used).toLocaleString() + "원" : "-"}</p>
+         <p><b>사용 한도:</b> ${card.cardType === "신용" ? Number(limit).toLocaleString() + "원" : "-"}</p>`;
     })
     .catch(err => {
         document.getElementById("cardResult").innerHTML = `<div class="error">${err}</div>`;
@@ -200,12 +217,10 @@ document.getElementById("btnNextBirthday").addEventListener("click", function() 
         .then(response => response.json())
         .then(data => {
             let resultArea = document.getElementById("birthdayResult");
-
             if(!data || !data.customerName) {
                 resultArea.innerHTML = "조회 결과가 없습니다.";
                 return;
             }
-
             resultArea.innerHTML =
                 `🎉 <b>${data.customerName}</b> 고객님의 생일이 가장 가까워요! <br>
                  📍 주소: ${data.address} <br>
@@ -242,7 +257,7 @@ async function createTransaction() {
 
         const data = await res.json();
         document.getElementById("transactionCreateResult").innerHTML =
-            `<div class="success">${data.transactionType} 완료! 잔액: ${Number(data.balanceAfter).toLocaleString()}원</div>`;
+            `<div class="success">${data.transactionType} 완료! 잔액: ${Number(data.balanceAfter ?? 0).toLocaleString()}원</div>`;
     } catch (err) {
         document.getElementById("transactionCreateResult").innerHTML = `<div class="error">${err.message}</div>`;
     }
@@ -265,23 +280,24 @@ async function fetchTransactions() {
             document.getElementById("transactionResult").innerHTML = "<div class='error'>거래 내역 없음</div>";
             return;
         }
-let html = `<table>
+
+        let html = `<table>
                 <tr>
                     <th>일자</th>
                     <th>구분</th>
                     <th>금액</th>
                     <th>잔액</th>
-                    <th>거래 내역</th> <!-- 새 컬럼 -->
+                    <th>거래 내역</th>
                 </tr>`;
-list.forEach(t => {
-    html += `<tr>
-                <td>${t.transactionDate}</td>
-                <td>${t.transactionType}</td>
-                <td>${Number(t.amount).toLocaleString()}원</td>
-                <td>${Number(t.balanceAfter).toLocaleString()}원</td>
-                <td>${t.transactionContent}</td> <!-- 거래 내역 표시 -->
-             </tr>`;
-});
+        list.forEach(t => {
+            html += `<tr>
+                        <td>${t.transactionDate}</td>
+                        <td>${t.transactionType}</td>
+                        <td>${Number(t.amount ?? 0).toLocaleString()}원</td>
+                        <td>${Number(t.balanceAfter ?? 0).toLocaleString()}원</td>
+                        <td>${t.transactionContent ?? '-'}</td>
+                     </tr>`;
+        });
 
         html += `</table>`;
         document.getElementById("transactionResult").innerHTML = html;
@@ -290,6 +306,49 @@ list.forEach(t => {
     }
 }
 
+async function fetchCardUsage() {
+    const ssn = document.getElementById("cardInfoSsn").value.trim();
+
+    if (!ssn) return alert("고객 SSN을 입력하세요.");
+
+    try {
+        const res = await fetch(`/account/card-info/all?customerSsn=${encodeURIComponent(ssn)}`);
+        if (!res.ok) throw new Error("조회 실패");
+        const cards = await res.json();
+
+        if (cards.length === 0) {
+            document.getElementById("cardUsageResult").innerHTML = "조회 결과 없음";
+            return;
+        }
+
+        let html = `<table>
+            <tr>
+              <th>카드 ID</th>
+              <th>카드 종류</th>
+              <th>연결 계좌 ID</th>
+              <th>현재 잔액</th>
+              <th>사용 금액</th>
+              <th>사용 한도</th>
+            </tr>`;
+
+        cards.forEach(c => {
+            html += `<tr>
+                        <td>${c.cardId}</td>
+                        <td>${c.cardType}</td>
+                        <td>${c.accountId}</td>
+                        <td>${Number(c.accountBalance ?? 0).toLocaleString()}원</td>
+                        <td>${c.cardType === "신용" ? Number(c.usedAmount ?? 0).toLocaleString() + "원" : "-"}</td>
+                        <td>${c.cardType === "신용" ? Number(c.limitAmount ?? 0).toLocaleString() + "원" : "-"}</td>
+                     </tr>`;
+        });
+
+        html += `</table>`;
+        document.getElementById("cardUsageResult").innerHTML = html;
+
+    } catch (err) {
+        document.getElementById("cardUsageResult").innerHTML = `<div class="error">${err.message}</div>`;
+    }
+}
 </script>
 </body>
 </html>
