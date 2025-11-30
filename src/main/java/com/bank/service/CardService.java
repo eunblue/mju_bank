@@ -10,6 +10,7 @@ import com.bank.repository.CustomerRepository;
 import com.bank.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -27,7 +28,6 @@ public class CardService {
 
     // 카드 발급
     public synchronized Card issueCard(String customerSsn, String customerName, Integer accountId, String cardType) {
-
         Customer customer = customerRepository.findById(customerSsn).orElse(null);
         if (customer == null) {
             customer = new Customer();
@@ -37,8 +37,11 @@ public class CardService {
             customerRepository.save(customer);
         }
 
-        Account account = accountRepository.findById(accountId)
-                .orElseThrow(() -> new RuntimeException("Account Not Found: " + accountId));
+        Account account = null;
+        if (accountId != null) {
+            account = accountRepository.findById(accountId)
+                    .orElseThrow(() -> new RuntimeException("Account Not Found: " + accountId));
+        }
 
         Card lastCard = cardRepository.findTopByOrderByCardIdDesc();
         int nextId = 10001;
@@ -64,25 +67,33 @@ public class CardService {
         return cardRepository.save(newCard);
     }
 
-    // 고객 카드 + 연결 계좌 + 사용금액 + 한도 조회
+    @Transactional(readOnly = true)
     public List<CreditCardInfoDto> getCardsByCustomer(String customerSsn) {
         List<Card> cards = cardRepository.findByCustomerCustomerSsn(customerSsn);
 
         return cards.stream().map(card -> {
-            BigDecimal usedAmount = transactionRepository.sumUsedAmount(card.getAccount().getAccountId());
-            if (usedAmount == null) usedAmount = BigDecimal.ZERO;
+            Account account = card.getAccount();
+            Integer accountId = account != null ? account.getAccountId() : null;
+            String accountType = account != null ? account.getAccountType() : null;
+            BigDecimal accountBalance = account != null ? account.getBalance() : BigDecimal.ZERO;
 
-            BigDecimal limitAmount = "체크".equals(card.getCardType()) ? BigDecimal.ZERO : card.getLimitAmount();
-            BigDecimal accountBalance = card.getAccount().getBalance() != null ? card.getAccount().getBalance() : BigDecimal.ZERO;
+            BigDecimal usedAmount = BigDecimal.ZERO;
+            if ("신용".equals(card.getCardType()) && accountId != null) {
+                BigDecimal sumUsed = transactionRepository.sumUsedAmount(accountId);
+                usedAmount = sumUsed != null ? sumUsed : BigDecimal.ZERO;
+            }
+
+            BigDecimal limitAmount = "신용".equals(card.getCardType()) ? card.getLimitAmount() : BigDecimal.ZERO;
 
             return new CreditCardInfoDto(
                     card.getCardId(),
                     card.getCardType(),
-                    card.getAccount().getAccountId(),
-                    card.getAccount().getAccountType(),
+                    accountId,
+                    accountType,
+                    accountBalance,
                     usedAmount,
                     limitAmount,
-                    accountBalance
+                    card.getIssueDate()
             );
         }).collect(Collectors.toList());
     }

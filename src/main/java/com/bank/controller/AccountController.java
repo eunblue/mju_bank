@@ -1,5 +1,6 @@
 package com.bank.controller;
 
+import com.bank.domain.Account;
 import com.bank.domain.Card;
 import com.bank.domain.Customer;
 import com.bank.domain.Transaction;
@@ -65,14 +66,29 @@ public class AccountController {
     // -------------------------
     @PostMapping("/card/issue")
     @ResponseBody
-    public Card issueCard(
+    public CreditCardInfoDto issueCard(
             @RequestParam String customerSsn,
             @RequestParam String customerName,
             @RequestParam Integer accountId,
             @RequestParam String cardType
     ) {
-        return cardService.issueCard(customerSsn, customerName, accountId, cardType);
+        Card card = cardService.issueCard(customerSsn, customerName, accountId, cardType);
+        Account account = card.getAccount();
+
+        BigDecimal accountBalance = account != null ? account.getBalance() : BigDecimal.ZERO;
+
+        return new CreditCardInfoDto(
+                card.getCardId(),
+                card.getCardType(),
+                account != null ? account.getAccountId() : null,
+                account != null ? account.getAccountType() : null,
+                accountBalance,
+                BigDecimal.ZERO,
+                card.getLimitAmount(),
+                card.getIssueDate()
+        );
     }
+
 
     @GetMapping("/next-birthday")
     @ResponseBody
@@ -113,24 +129,20 @@ public class AccountController {
     // 고객 신용카드 정보 조회 (이름 + 주민번호)
     // -------------------------
     @GetMapping("/card-info/all")
-    @ResponseBody
     public List<CreditCardInfoDto> getAllCardInfo(@RequestParam String customerSsn) {
         return cardService.getCardsByCustomer(customerSsn);
     }
 
-
     @GetMapping("/card/summary")
-    @ResponseBody
     public Map<String, Object> getCardSummary(
             @RequestParam String customerName,
             @RequestParam String customerSsn) {
 
         List<CreditCardInfoDto> cards = cardService.getCardsByCustomer(customerSsn);
+
         return Map.of(
                 "customerName", customerName,
                 "cards", cards
         );
     }
-
-
 }

@@ -31,11 +31,11 @@ public class Card {
     @Column(name = "card_type", nullable = false)
     private String cardType;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "customer_ssn", nullable = false)
     private Customer customer;
 
-    @ManyToOne
-    @JoinColumn(name = "account_id", nullable = false)
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "account_id")
     private Account account;
 }

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>명지은행 - 홈</title>
+  <style>
+        /* 폰트 및 기본 설정 */
+        body {
+            font-family: 'Malgun Gothic', '맑은 고딕', Arial, sans-serif;
+            max-width: 1000px;
+            margin: auto;
+            padding: 0;
+            background-color: #f4f7f6; /* 밝은 회색 배경 */
+            color: #333;
+        }
+
+        /* 헤더 스타일 (다른 페이지들과 동일) */
+        #header {
+            background-color: #004d99; /* 진한 파란색 */
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            border-bottom: 5px solid #002c5f;
+            margin-bottom: 30px;
+        }
+
+        #bankLogo {
+            height: 40px;
+            margin-right: 15px;
+        }
+
+        #bankName {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        /* 메인 콘텐츠 스타일 */
+        .container {
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #004d99;
+            margin-bottom: 40px;
+            font-size: 28px;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 30px; /* 버튼 사이 간격 */
+        }
+
+        .service-button {
+            display: block;
+            text-decoration: none;
+            cursor: pointer;
+            background-color: #0099cc; /* 밝은 파란색 */
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            width: 250px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s, transform 0.1s;
+        }
+
+        .service-button:hover {
+            background-color: #007399;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+
+<div id="header">
+  <img id="bankLogo" alt="명지은행 로고">
+  <span id="bankName">명지은행 - 메인 서비스</span>
+</div>
+
+<div class="container">
+  <h1>원하시는 금융 서비스를 선택해주세요</h1>
+
+  <div class="button-group">
+
+    <a href="account_new.html" class="service-button">
+      🏦 새 계좌 개설
+    </a>
+
+    <a href="card_new.html" class="service-button">
+      💳 카드 발급 신청
+    </a>
+
+  </div>
+</div>
+
+<script>
+// --- 로고 이미지 설정 (JavaScript) ---
+document.addEventListener('DOMContentLoaded', function() {
+    const logoElement = document.getElementById('bankLogo');
+    logoElement.src = 'symbol02.png';
+});
+</script>
+</body>
+</html>

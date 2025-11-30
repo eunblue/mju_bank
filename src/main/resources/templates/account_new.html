@@ -2,130 +2,270 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>계좌 & 카드 관리</title>
+  <title>명지은행 - 계좌 & 카드 관리</title>
   <style>
-    body { font-family: Arial, sans-serif; max-width: 900px; margin: auto; padding: 20px; }
-    h2 { color: #333; }
-    label { display: block; margin-top: 12px; font-weight: bold; }
-    input, select, button { padding: 8px; margin-top: 4px; }
-    button { cursor: pointer; }
-    .section { margin-bottom: 40px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 12px; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-    th { background-color: #eee; }
-    .success { color: green; font-weight: bold; margin-bottom: 6px; }
-    .error { color: red; font-weight: bold; margin-bottom: 6px; }
-  </style>
+/* 기본 설정 */
+body {
+    font-family: 'Malgun Gothic', Arial, sans-serif;
+    background-color: #f4f7f6;
+    margin: 0;
+    padding: 0;
+    color: #333;
+}
+.container {
+    max-width: 1000px;
+    margin: auto;
+    padding: 20px;
+}
+
+/* 헤더 */
+#header {
+    background-color: #004d99;
+    color: white;
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 5px solid #002c5f;
+}
+#bankLogo {
+    height: 50px;
+    margin-right: 15px;
+}
+#bankName {
+    font-size: 26px;
+    font-weight: bold;
+}
+
+/* 섹션 카드 */
+.section {
+    background-color: #fff;
+    padding: 25px 30px;
+    margin-bottom: 30px;
+    border-radius: 10px;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.05);
+}
+h2 {
+    color: #004d99;
+    font-size: 22px;
+    margin-bottom: 20px;
+    border-left: 5px solid #004d99;
+    padding-left: 12px;
+}
+
+/* 라벨 & 입력 */
+label {
+    display: block;
+    font-weight: bold;
+    margin-top: 15px;
+    color: #555;
+}
+input, select {
+    width: 100%;
+    padding: 10px 12px;
+    margin-top: 6px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+    box-sizing: border-box;
+}
+input:focus, select:focus {
+    border-color: #004d99;
+    outline: none;
+}
+
+/* 버튼 */
+button {
+    cursor: pointer;
+    background-color: #0099cc;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    margin-top: 15px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+button:hover {
+    background-color: #007399;
+}
+
+/* 조회 버튼 별도 스타일 */
+#searchName + button {
+    width: auto;
+    margin-left: 10px;
+    padding: 10px 18px;
+    background-color: #28a745;
+}
+#searchName + button:hover {
+    background-color: #1e7e34;
+}
+
+/* 테이블 */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 18px;
+}
+th, td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+th {
+    background: linear-gradient(90deg, #004d99, #0077cc);
+    color: white;
+    font-weight: normal;
+}
+tr:hover {
+    background-color: #f1f9ff;
+}
+
+/* 결과 메시지 */
+.success {
+    color: #28a745;
+    font-weight: bold;
+    margin-top: 12px;
+    padding: 10px;
+    background-color: #e2f7e4;
+    border-radius: 6px;
+}
+.error {
+    color: #dc3545;
+    font-weight: bold;
+    margin-top: 12px;
+    padding: 10px;
+    background-color: #f9e2e5;
+    border-radius: 6px;
+}
+
+/* 생일 조회 */
+#birthdayResult {
+    padding: 15px;
+    background-color: #fffbe6;
+    border: 1px solid #ffc107;
+    border-radius: 6px;
+    line-height: 1.6;
+    font-size: 17px;
+    margin-top: 10px;
+}
+
+/* 반응형 */
+@media (max-width: 600px) {
+    #header { flex-direction: column; align-items: flex-start; }
+    #bankName { margin-top: 8px; }
+    input, select, button { width: 100%; }
+    #searchName + button { margin-left: 0; margin-top: 10px; }
+}
+</style>
 </head>
 <body>
-
-<!-- 계좌 생성 -->
-<div class="section">
-  <h2>새 계좌 만들기</h2>
-  <form id="accountForm">
-    <label>고객 이름 :</label>
-    <input type="text" id="customerName" required>
-
-    <label>고객 주민번호(SSN) :</label>
-    <input type="text" id="customerSsn" required>
-
-    <label>계좌 종류 :</label>
-    <select id="accountType">
-      <option value="적금">적금</option>
-      <option value="입출금">입출금</option>
-    </select><br><br>
-
-    <button type="button" onclick="submitAccountForm()">계좌 생성</button>
-  </form>
-  <div id="accountResult"></div>
+<div id="header">
+  <img src="/images/symbol02.png" alt="심볼">
+  <span id="bankName">명지은행 - 금융 서비스</span>
 </div>
 
-<hr>
+<div class="container">
+  <!-- 계좌 생성 -->
+  <div class="section">
+    <h2>새 계좌 만들기 🏦</h2>
+    <form id="accountForm">
+      <label>고객 이름 :</label>
+      <input type="text" id="customerName" required>
 
-<!-- 고객 계좌 조회 -->
-<div class="section">
-  <h2>고객 계좌 조회</h2>
-  <label>고객 이름:</label>
-  <input type="text" id="searchName" placeholder="홍길동">
-  <button onclick="fetchAccounts()">조회</button>
-  <div id="accountsTable"></div>
-</div>
+      <label>고객 주민번호(SSN) :</label>
+      <input type="text" id="customerSsn" required>
 
-<hr>
+      <label>계좌 종류 :</label>
+      <select id="accountType">
+        <option value="적금">적금</option>
+        <option value="입출금">입출금</option>
+      </select>
 
-<!-- 카드 발급 -->
-<div class="section">
-  <h2>카드 발급</h2>
-  <form id="cardForm">
-    <label>고객 SSN:</label>
-    <input type="text" id="cardCustomerSsn" required>
+      <button type="button" onclick="submitAccountForm()">계좌 생성</button>
+    </form>
+    <div id="accountResult"></div>
+  </div>
 
+  <!-- 고객 계좌 조회 -->
+  <div class="section">
+    <h2>고객 계좌 조회 🔍</h2>
     <label>고객 이름:</label>
-    <input type="text" id="cardCustomerName" required>
+    <input type="text" id="searchName" placeholder="홍길동">
+    <button onclick="fetchAccounts()">조회</button>
+    <div id="accountsTable"></div>
+  </div>
 
-    <label>연결 계좌 ID:</label>
-    <input type="text" id="accountId" required>
+  <!-- 카드 발급 -->
+  <div class="section">
+    <h2>카드 발급 💳</h2>
+    <form id="cardForm">
+      <label>고객 SSN:</label>
+      <input type="text" id="cardCustomerSsn" required>
 
-    <label>카드 종류:</label>
-    <select id="cardType">
-      <option value="신용">신용카드</option>
-      <option value="체크">체크카드</option>
+      <label>고객 이름:</label>
+      <input type="text" id="cardCustomerName" required>
+
+      <label>연결 계좌 ID:</label>
+      <input type="text" id="accountId" required>
+
+      <label>카드 종류:</label>
+      <select id="cardType">
+        <option value="신용">신용카드</option>
+        <option value="체크">체크카드</option>
+      </select>
+
+      <button type="button" onclick="issueCard()">카드 발급 신청</button>
+    </form>
+    <div id="cardResult"></div>
+  </div>
+
+  <!-- 가장 가까운 생일 -->
+  <button id="btnNextBirthday">가장 가까운 생일 고객 조회 🎂</button>
+  <div id="birthdayResult"></div>
+
+  <!-- 거래 등록 -->
+  <div class="section">
+    <h2>거래 등록</h2>
+    <label>고객 이름:</label>
+    <input type="text" id="transCustomerName" placeholder="홍길동">
+    <label>고객 SSN:</label>
+    <input type="text" id="transCustomerSsn" placeholder="010507-11111111">
+    <label>계좌 ID:</label>
+    <input type="text" id="transAccountId" placeholder="21">
+    <label>금액:</label>
+    <input type="number" id="transAmount" placeholder="10000">
+    <label>거래 내용:</label>
+    <input type="text" id="transContent" placeholder="카페, 편의점 등">
+    <label>거래 타입:</label>
+    <select id="transType">
+      <option value="입금">입금</option>
+      <option value="출금">출금</option>
     </select>
+    <button onclick="createTransaction()">거래 등록</button>
+    <div id="transactionCreateResult"></div>
+  </div>
 
-    <button type="button" onclick="issueCard()">카드 발급</button>
-  </form>
-  <div id="cardResult"></div>
-</div>
+  <!-- 거래 내역 조회 -->
+  <div class="section">
+    <h2>거래 내역 조회 (지난 1개월)</h2>
+    <label>고객 이름:</label>
+    <input type="text" id="transSearchName" placeholder="홍길동">
+    <label>고객 SSN:</label>
+    <input type="text" id="transSearchSsn" placeholder="010507-11111111">
+    <button onclick="fetchTransactions()">조회</button>
+    <div id="transactionResult"></div>
+  </div>
 
-<hr>
-
-<!-- 가장 가까운 생일 고객 -->
-<button id="btnNextBirthday">가장 가까운 생일 고객 조회</button>
-<div id="birthdayResult" style="margin-top:15px; font-size:18px; font-weight:bold;"></div>
-
-<hr>
-
-<div class="section">
-  <h2>거래 등록</h2>
-  <label>고객 이름:</label>
-  <input type="text" id="transCustomerName" placeholder="홍길동">
-  <label>고객 SSN:</label>
-  <input type="text" id="transCustomerSsn" placeholder="010507-11111111">
-  <label>계좌 ID:</label>
-  <input type="text" id="transAccountId" placeholder="21">
-  <label>금액:</label>
-  <input type="number" id="transAmount" placeholder="10000">
-  <label>거래 내용:</label>
-  <input type="text" id="transContent" placeholder="카페, 편의점 등">
-  <label>거래 타입:</label>
-  <select id="transType">
-    <option value="입금">입금</option>
-    <option value="출금">출금</option>
-  </select>
-  <button onclick="createTransaction()">거래 등록</button>
-  <div id="transactionCreateResult"></div>
-</div>
-
-<div class="section">
-  <h2>거래 내역 조회 (지난 1개월)</h2>
-  <label>고객 이름:</label>
-  <input type="text" id="transSearchName" placeholder="홍길동">
-  <label>고객 SSN:</label>
-  <input type="text" id="transSearchSsn" placeholder="010507-11111111">
-  <button onclick="fetchTransactions()">조회</button>
-  <div id="transactionResult"></div>
-</div>
-
-<hr>
-
-<div class="section">
-  <h2>고객 카드 & 계좌 & 사용내역 조회</h2>
-  <label>고객 이름:</label>
-  <input type="text" id="cardInfoName" placeholder="홍길동">
-  <label>고객 SSN:</label>
-  <input type="text" id="cardInfoSsn" placeholder="010507-11111111">
-  <button onclick="fetchCardUsage()">조회</button>
-  <div id="cardUsageResult"></div>
+  <!-- 카드&계좌&사용내역 조회 -->
+  <div class="section">
+    <h2>고객 카드 & 계좌 & 사용내역 조회</h2>
+    <label>고객 이름:</label>
+    <input type="text" id="cardInfoName" placeholder="홍길동">
+    <label>고객 SSN:</label>
+    <input type="text" id="cardInfoSsn" placeholder="010507-11111111">
+    <button onclick="fetchCardUsage()">조회</button>
+    <div id="cardUsageResult"></div>
+  </div>
 </div>
 
 <script>
@@ -193,24 +333,19 @@ function issueCard() {
     })
     .then(res => res.json())
     .then(card => {
-        const balance = card.accountBalance ?? 0;
-        const used = card.usedAmount ?? 0;
-        const limit = card.limitAmount ?? 0;
-
         document.getElementById("cardResult").innerHTML =
         `<div class="success">카드 발급 성공!</div>
          <p><b>카드 ID:</b> ${card.cardId}</p>
          <p><b>카드 종류:</b> ${card.cardType}</p>
-         <p><b>연결 계좌 ID:</b> ${card.accountId}</p>
-         <p><b>발급일:</b> ${card.issueDate ?? '-'}</p>
-         <p><b>현재 잔액:</b> ${Number(balance).toLocaleString()}원</p>
-         <p><b>사용 금액:</b> ${card.cardType === "신용" ? Number(used).toLocaleString() + "원" : "-"}</p>
-         <p><b>사용 한도:</b> ${card.cardType === "신용" ? Number(limit).toLocaleString() + "원" : "-"}</p>`;
+         <p><b>연결 계좌 ID:</b> ${card.accountId ?? '-'}</p>
+         <p><b>계좌 잔액:</b> ${Number(card.accountBalance ?? 0).toLocaleString()}원</p>
+         <p><b>사용 한도:</b> ${Number(card.limitAmount ?? 0).toLocaleString()}원</p>`;
     })
     .catch(err => {
         document.getElementById("cardResult").innerHTML = `<div class="error">${err}</div>`;
     });
 }
+
 
 document.getElementById("btnNextBirthday").addEventListener("click", function() {
     fetch("/account/next-birthday")
