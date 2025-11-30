@@ -170,15 +170,14 @@ tr:hover {
     <h2>새 계좌 만들기 🏦</h2>
     <form id="accountForm">
       <label>고객 이름 :</label>
-      <input type="text" id="customerName" required>
-
+      <input type="text" id="customerName" required placeholder="이름을 입력하세요.">
       <label>고객 주민번호(SSN) :</label>
-      <input type="text" id="customerSsn" required>
+      <input type="text" id="customerSsn" required placeholder="ex)991122-1234567">
 
       <label>계좌 종류 :</label>
       <select id="accountType">
-        <option value="적금">적금</option>
-        <option value="입출금">입출금</option>
+        <option value="적금">입출금</option>
+        <option value="입출금">적금</option>
       </select>
 
       <button type="button" onclick="submitAccountForm()">계좌 생성</button>
@@ -190,7 +189,7 @@ tr:hover {
   <div class="section">
     <h2>고객 계좌 조회 🔍</h2>
     <label>고객 이름:</label>
-    <input type="text" id="searchName" placeholder="홍길동">
+    <input type="text" id="searchName" placeholder="이름을 입력하세요.">
     <button onclick="fetchAccounts()">조회</button>
     <div id="accountsTable"></div>
   </div>
@@ -200,13 +199,13 @@ tr:hover {
     <h2>카드 발급 💳</h2>
     <form id="cardForm">
       <label>고객 SSN:</label>
-      <input type="text" id="cardCustomerSsn" required>
+      <input type="text" id="cardCustomerSsn" required placeholder="ex)991122-1234567">
 
       <label>고객 이름:</label>
-      <input type="text" id="cardCustomerName" required>
+      <input type="text" id="cardCustomerName" required placeholder="이름을 입력하세요.">
 
       <label>연결 계좌 ID:</label>
-      <input type="text" id="accountId" required>
+      <input type="text" id="accountId" required placeholder="계좌번호를 입력하세요.">
 
       <label>카드 종류:</label>
       <select id="cardType">
@@ -227,13 +226,13 @@ tr:hover {
   <div class="section">
     <h2>거래 등록</h2>
     <label>고객 이름:</label>
-    <input type="text" id="transCustomerName" placeholder="홍길동">
+    <input type="text" id="transCustomerName" placeholder="이름을 입력하세요.">
     <label>고객 SSN:</label>
-    <input type="text" id="transCustomerSsn" placeholder="010507-11111111">
+    <input type="text" id="transCustomerSsn" placeholder="ex)991122-1234567">
     <label>계좌 ID:</label>
-    <input type="text" id="transAccountId" placeholder="21">
+    <input type="text" id="transAccountId" placeholder="계좌번호를 입력하세요.">
     <label>금액:</label>
-    <input type="number" id="transAmount" placeholder="10000">
+    <input type="number" id="transAmount" placeholder="금액을 입력하세요.">
     <label>거래 내용:</label>
     <input type="text" id="transContent" placeholder="카페, 편의점 등">
     <label>거래 타입:</label>
@@ -249,9 +248,9 @@ tr:hover {
   <div class="section">
     <h2>거래 내역 조회 (지난 1개월)</h2>
     <label>고객 이름:</label>
-    <input type="text" id="transSearchName" placeholder="홍길동">
+    <input type="text" id="transSearchName" placeholder="이름을 입력하세요.">
     <label>고객 SSN:</label>
-    <input type="text" id="transSearchSsn" placeholder="010507-11111111">
+    <input type="text" id="transSearchSsn" placeholder="ex)991122-1234567">
     <button onclick="fetchTransactions()">조회</button>
     <div id="transactionResult"></div>
   </div>
@@ -260,9 +259,9 @@ tr:hover {
   <div class="section">
     <h2>고객 카드 & 계좌 & 사용내역 조회</h2>
     <label>고객 이름:</label>
-    <input type="text" id="cardInfoName" placeholder="홍길동">
+    <input type="text" id="cardInfoName" placeholder="이름을 입력하세요.">
     <label>고객 SSN:</label>
-    <input type="text" id="cardInfoSsn" placeholder="010507-11111111">
+    <input type="text" id="cardInfoSsn" placeholder="ex)991122-123456">
     <button onclick="fetchCardUsage()">조회</button>
     <div id="cardUsageResult"></div>
   </div>
